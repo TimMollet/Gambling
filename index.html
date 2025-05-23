@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Video Sequence Prototype</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+    }
+    video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 1;
+    }
+    #nextBtn {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+    #nextBtn img {
+      width: auto;
+      height: auto;
+      max-width: 25vw; /* prevent it from being wider than the screen */
+      max-height: 80vh; /* prevent it from being taller than viewport height */
+      user-select: none;
+  display: block;
+    }
+  </style>
+</head>
+<body>
+  <video id="bgVideo" src="videos/video1.mp4" autoplay muted></video>
+  <button id="nextBtn">
+    <img src="buttons/button1.png" alt="Next">
+  </button>
+  <script>
+    const video = document.getElementById('bgVideo');
+    const button = document.getElementById('nextBtn').querySelector('img');
+
+    const videos = [
+      "videos/video1.mp4",
+      "videos/video2.mp4",
+      "videos/video3.mp4",
+      "videos/video4.mp4",
+      "videos/video5.mp4",
+      "videos/video6.mp4",
+      "videos/video7.mp4",
+      "videos/video8.mp4"
+    ];
+
+    const buttons = [
+      "buttons/button1.png",
+      "buttons/button2.png",
+      "buttons/button3.png",
+      "buttons/button4.png",
+      "buttons/button5.png",
+      "buttons/button6.png",
+      "buttons/button7.png",
+      "buttons/button8.png"
+    ];
+
+    let current = 0;
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (current < videos.length - 1) {
+        current++;
+        video.src = videos[current];
+        video.play();
+        button.src = buttons[current];
+      }
+    });
+  </script>
+</body>
+</html>
