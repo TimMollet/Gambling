@@ -12,12 +12,19 @@
   const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i + 1}.png`);
   const narrations = Array.from({ length: totalScenes }, (_, i) => `audio/scene${i + 1}.mp3`);
 
+  // Initialize
   videoPlayer.src = videos[sceneIndex];
   videoPlayer.loop = true;
   btnImage.src = buttons[sceneIndex];
+
+  // Disable button and set scale to 0 initially
   nextBtn.disabled = true;
   nextBtn.classList.remove('enabled');
 
+  // Lock scrolling
+  document.body.style.overflow = 'hidden';
+
+  // Start background music on first user interaction
   function startBgMusic() {
     bgMusic.play().catch(e => console.log("bgMusic error:", e));
     document.removeEventListener('click', startBgMusic);
@@ -25,6 +32,7 @@
   }
   document.addEventListener('click', startBgMusic);
 
+  // Play narration and control button enabling
   function playNarration(index) {
     if (currentNarration) {
       currentNarration.pause();
@@ -48,26 +56,26 @@
       videoPlayer.src = videos[sceneIndex];
       videoPlayer.loop = (sceneIndex === totalScenes - 1);
       videoPlayer.play();
+
       btnImage.src = buttons[sceneIndex];
+
       playNarration(sceneIndex);
     }
   });
 
-  // Sparkles
-  const sparkleSrc = 'particles/sparkle.gif';
-  const velocityMultiplier = 5;
-
+  // Sparkles effect
   let lastX = null;
   let lastY = null;
 
-  function spawnSparkles(x, y, dx, dy) {
-    if (sceneIndex > 2) return;
+  const sparkleSrc = 'particles/sparkle.gif';
+  const velocityMultiplier = 5;
 
+  function spawnSparkles(x, y, dx, dy) {
     const baseAngle = Math.atan2(dy, dx);
     const speedBase = Math.sqrt(dx * dx + dy * dy) * velocityMultiplier;
-    const maxSparkles = 6;
+
+    const maxSparkles = 3;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
-    const baseScale = Math.max(0.3, 1 - (sceneIndex * 0.15));
 
     for (let i = 0; i < numSparkles; i++) {
       const sparkle = document.createElement('img');
@@ -76,19 +84,20 @@
 
       const angleOffset = (Math.random() - 0.5) * (Math.PI / 4);
       const angle = baseAngle + angleOffset;
+
       const speed = speedBase * (0.8 + Math.random() * 0.4);
       const dxSpark = Math.cos(angle) * speed;
       const dySpark = Math.sin(angle) * speed;
 
       sparkle.style.left = `${x}px`;
       sparkle.style.top = `${y}px`;
-      sparkle.style.transform = `translate(0, 0) scale(${baseScale}) rotate(${Math.random() * 360}deg)`;
+      sparkle.style.transform = `translate(0, 0) scale(1) rotate(${Math.random() * 360}deg)`;
       sparkle.style.opacity = '1';
 
       document.body.appendChild(sparkle);
 
       requestAnimationFrame(() => {
-        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${baseScale * 0.5}) rotate(${Math.random() * 360}deg)`;
+        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(0.5) rotate(${Math.random() * 360}deg)`;
         sparkle.style.opacity = '0';
       });
 
@@ -107,22 +116,31 @@
 
     const dx = x - lastX;
     const dy = y - lastY;
+
+    // Lower threshold to 0.5 for better mobile sensitivity
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+
     lastX = x;
     lastY = y;
-
-    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
 
     spawnSparkles(x, y, dx, dy);
   }
 
-  // Mouse
-  document.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+  // Mouse support
+  document.addEventListener('mousemove', (e) => {
+    if (sceneIndex > 2) return;
+    handleMove(e.clientX, e.clientY);
+  });
 
   // Touch support
   document.addEventListener('touchstart', e => {
     if (e.touches.length > 0) {
-      lastX = e.touches[0].clientX;
-      lastY = e.touches[0].clientY;
+      const touch = e.touches[0];
+      lastX = touch.clientX;
+      lastY = touch.clientY;
+
+      // Spawn sparkles on tap start
+      spawnSparkles(lastX, lastY, 0, 0);
     }
   });
 
@@ -131,10 +149,5 @@
       const touch = e.touches[0];
       handleMove(touch.clientX, touch.clientY);
     }
-  }, { passive: true });
-
-  // Prevent scrolling on mobile
-  document.body.addEventListener('touchmove', (e) => {
-    e.preventDefault();
   }, { passive: false });
 })();
