@@ -60,38 +60,36 @@
     }
   });
 
-  // Sparkles effect
+  // Sparkles effect with mobile support
   let lastX = null;
   let lastY = null;
 
   const sparkleSrc = 'particles/sparkle.gif';
   const velocityMultiplier = 5;
 
-  document.addEventListener('mousemove', (e) => {
-    if (sceneIndex > 2) return; // no sparkles after scene 2
+  function handleSparkles(x, y) {
+    if (sceneIndex > 2) return;
 
     if (lastX === null || lastY === null) {
-      lastX = e.clientX;
-      lastY = e.clientY;
+      lastX = x;
+      lastY = y;
       return;
     }
 
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
+    const dx = x - lastX;
+    const dy = y - lastY;
 
-    lastX = e.clientX;
-    lastY = e.clientY;
+    lastX = x;
+    lastY = y;
 
     if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
 
     const baseAngle = Math.atan2(dy, dx);
     const speedBase = Math.sqrt(dx * dx + dy * dy) * velocityMultiplier;
 
-    const maxSparkles = 3;
+    const maxSparkles = 6;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
-
-    // sparkle scale fades from 1 to 0 as sceneIndex goes 0->3 (though sparkles stop after scene 2)
-    const sparkleScale = Math.max(0, 1 - sceneIndex / maxSparkles);
+    const baseScale = Math.max(0.3, 1 - sceneIndex * 0.1);
 
     for (let i = 0; i < numSparkles; i++) {
       const sparkle = document.createElement('img');
@@ -105,15 +103,15 @@
       const dxSpark = Math.cos(angle) * speed;
       const dySpark = Math.sin(angle) * speed;
 
-      sparkle.style.left = `${e.clientX}px`;
-      sparkle.style.top = `${e.clientY}px`;
-      sparkle.style.transform = `translate(0, 0) scale(${sparkleScale}) rotate(${Math.random() * 360}deg)`;
+      sparkle.style.left = `${x}px`;
+      sparkle.style.top = `${y}px`;
+      sparkle.style.transform = `translate(0, 0) scale(${baseScale}) rotate(${Math.random() * 360}deg)`;
       sparkle.style.opacity = '1';
 
       document.body.appendChild(sparkle);
 
       requestAnimationFrame(() => {
-        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${sparkleScale * 0.5}) rotate(${Math.random() * 360}deg)`;
+        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${baseScale * 0.5}) rotate(${Math.random() * 360}deg)`;
         sparkle.style.opacity = '0';
       });
 
@@ -121,5 +119,16 @@
         sparkle.remove();
       }, 900);
     }
+  }
+
+  document.addEventListener('mousemove', e => {
+    handleSparkles(e.clientX, e.clientY);
   });
+
+  document.addEventListener('touchmove', e => {
+    if (e.touches.length > 0) {
+      const touch = e.touches[0];
+      handleSparkles(touch.clientX, touch.clientY);
+    }
+  }, { passive: true });
 })();
