@@ -67,8 +67,8 @@
   const sparkleSrc = 'particles/sparkle.gif';
   const velocityMultiplier = 5;
 
-  function handleSparkles(x, y) {
-    if (sceneIndex > 5) return;
+  function spawnSparkles(x, y) {
+    if (sceneIndex > 2) return;
 
     if (lastX === null || lastY === null) {
       lastX = x;
@@ -89,7 +89,7 @@
 
     const maxSparkles = 6;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
-    const baseScale = Math.max(0.3, 1 - sceneIndex * 0.1); // Reduce size per scene
+    const scale = 1 - (sceneIndex / maxSparkles);
 
     for (let i = 0; i < numSparkles; i++) {
       const sparkle = document.createElement('img');
@@ -105,13 +105,13 @@
 
       sparkle.style.left = `${x}px`;
       sparkle.style.top = `${y}px`;
-      sparkle.style.transform = `translate(0, 0) scale(${baseScale}) rotate(${Math.random() * 360}deg)`;
+      sparkle.style.transform = `translate(0, 0) scale(${scale}) rotate(${Math.random() * 360}deg)`;
       sparkle.style.opacity = '1';
 
       document.body.appendChild(sparkle);
 
       requestAnimationFrame(() => {
-        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${baseScale * 0.5}) rotate(${Math.random() * 360}deg)`;
+        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${scale * 0.5}) rotate(${Math.random() * 360}deg)`;
         sparkle.style.opacity = '0';
       });
 
@@ -121,29 +121,29 @@
     }
   }
 
-  // Mouse movement
-  document.addEventListener('mousemove', (e) => {
-    handleSparkles(e.clientX, e.clientY);
-  });
+  document.addEventListener('mousemove', (e) => spawnSparkles(e.clientX, e.clientY));
 
-  // Touch support
-  let isTouching = false;
-
+  // Mobile touch support
   document.addEventListener('touchstart', (e) => {
     if (e.touches.length > 0) {
-      isTouching = true;
       const touch = e.touches[0];
-      handleSparkles(touch.clientX, touch.clientY);
+      spawnSparkles(touch.clientX, touch.clientY);
     }
-  }, { passive: true });
+  });
 
   document.addEventListener('touchmove', (e) => {
-    if (!isTouching || e.touches.length === 0) return;
-    const touch = e.touches[0];
-    handleSparkles(touch.clientX, touch.clientY);
-  }, { passive: true });
+    if (e.touches.length > 0) {
+      const touch = e.touches[0];
+      spawnSparkles(touch.clientX, touch.clientY);
+    }
+    e.preventDefault(); // Prevent scroll
+  }, { passive: false });
 
-  document.addEventListener('touchend', () => {
-    isTouching = false;
+  // Disable scrolling via keyboard
+  window.addEventListener('keydown', function(e) {
+    const keys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space'];
+    if (keys.includes(e.code)) {
+      e.preventDefault();
+    }
   });
 })();
