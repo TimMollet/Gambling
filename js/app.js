@@ -53,8 +53,10 @@
     }
   });
 
+  // Sparkles
   const sparkleSrc = 'particles/sparkle.gif';
   const velocityMultiplier = 5;
+
   let lastX = null;
   let lastY = null;
 
@@ -63,7 +65,6 @@
 
     const baseAngle = Math.atan2(dy, dx);
     const speedBase = Math.sqrt(dx * dx + dy * dy) * velocityMultiplier;
-
     const maxSparkles = 6;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
     const baseScale = Math.max(0.3, 1 - (sceneIndex * 0.15));
@@ -75,7 +76,6 @@
 
       const angleOffset = (Math.random() - 0.5) * (Math.PI / 4);
       const angle = baseAngle + angleOffset;
-
       const speed = speedBase * (0.8 + Math.random() * 0.4);
       const dxSpark = Math.cos(angle) * speed;
       const dySpark = Math.sin(angle) * speed;
@@ -107,7 +107,6 @@
 
     const dx = x - lastX;
     const dy = y - lastY;
-
     lastX = x;
     lastY = y;
 
@@ -116,25 +115,26 @@
     spawnSparkles(x, y, dx, dy);
   }
 
-  document.addEventListener('mousemove', (e) => {
-    handleMove(e.clientX, e.clientY);
+  // Mouse
+  document.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+
+  // Touch support
+  document.addEventListener('touchstart', e => {
+    if (e.touches.length > 0) {
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+    }
   });
 
-  document.addEventListener('touchmove', (e) => {
+  document.addEventListener('touchmove', e => {
     if (e.touches.length > 0) {
       const touch = e.touches[0];
       handleMove(touch.clientX, touch.clientY);
     }
   }, { passive: true });
 
-  document.addEventListener('touchstart', (e) => {
-    if (e.touches.length > 0) {
-      const touch = e.touches[0];
-      lastX = touch.clientX;
-      lastY = touch.clientY;
-    }
-  });
-
-  // Disable page scrolling entirely
-  document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+  // Prevent scrolling on mobile
+  document.body.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+  }, { passive: false });
 })();
