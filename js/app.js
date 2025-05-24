@@ -60,7 +60,7 @@
     }
   });
 
-  // Sparkles effect with mobile support
+  // Sparkles effect
   let lastX = null;
   let lastY = null;
 
@@ -68,7 +68,7 @@
   const velocityMultiplier = 5;
 
   function handleSparkles(x, y) {
-    if (sceneIndex > 2) return;
+    if (sceneIndex > 5) return;
 
     if (lastX === null || lastY === null) {
       lastX = x;
@@ -89,7 +89,7 @@
 
     const maxSparkles = 6;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
-    const baseScale = Math.max(0.3, 1 - sceneIndex * 0.1);
+    const baseScale = Math.max(0.3, 1 - sceneIndex * 0.1); // Reduce size per scene
 
     for (let i = 0; i < numSparkles; i++) {
       const sparkle = document.createElement('img');
@@ -121,14 +121,29 @@
     }
   }
 
-  document.addEventListener('mousemove', e => {
+  // Mouse movement
+  document.addEventListener('mousemove', (e) => {
     handleSparkles(e.clientX, e.clientY);
   });
 
-  document.addEventListener('touchmove', e => {
+  // Touch support
+  let isTouching = false;
+
+  document.addEventListener('touchstart', (e) => {
     if (e.touches.length > 0) {
+      isTouching = true;
       const touch = e.touches[0];
       handleSparkles(touch.clientX, touch.clientY);
     }
   }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!isTouching || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    handleSparkles(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    isTouching = false;
+  });
 })();
