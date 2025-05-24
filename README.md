@@ -1,1 +1,1 @@
-# Gambling
+Project for University of Northampton
