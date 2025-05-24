@@ -21,7 +21,7 @@
   nextBtn.disabled = true;
   nextBtn.classList.remove('enabled');
 
-  // Lock scrolling
+  // Lock scrolling globally (to stop page scroll on mobile)
   document.body.style.overflow = 'hidden';
 
   // Start background music on first user interaction
@@ -117,7 +117,6 @@
     const dx = x - lastX;
     const dy = y - lastY;
 
-    // Lower threshold to 0.5 for better mobile sensitivity
     if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
 
     lastX = x;
@@ -132,19 +131,19 @@
     handleMove(e.clientX, e.clientY);
   });
 
-  // Touch support
+  // Touch support with preventDefault to avoid scroll
   document.addEventListener('touchstart', e => {
     if (e.touches.length > 0) {
       const touch = e.touches[0];
       lastX = touch.clientX;
       lastY = touch.clientY;
 
-      // Spawn sparkles on tap start
       spawnSparkles(lastX, lastY, 0, 0);
     }
   });
 
   document.addEventListener('touchmove', e => {
+    e.preventDefault(); // prevent scroll & enable dragging sparkles
     if (e.touches.length > 0) {
       const touch = e.touches[0];
       handleMove(touch.clientX, touch.clientY);
