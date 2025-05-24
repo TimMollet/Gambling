@@ -21,9 +21,6 @@
   nextBtn.disabled = true;
   nextBtn.classList.remove('enabled');
 
-  // Lock scrolling globally (to stop page scroll on mobile)
-  document.body.style.overflow = 'hidden';
-
   // Start background music on first user interaction
   function startBgMusic() {
     bgMusic.play().catch(e => console.log("bgMusic error:", e));
@@ -70,7 +67,24 @@
   const sparkleSrc = 'particles/sparkle.gif';
   const velocityMultiplier = 5;
 
-  function spawnSparkles(x, y, dx, dy) {
+  // Mouse sparkle effect (desktop)
+  document.addEventListener('mousemove', (e) => {
+    if (sceneIndex > 2) return;
+
+    if (lastX === null || lastY === null) {
+      lastX = e.clientX;
+      lastY = e.clientY;
+      return;
+    }
+
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+
     const baseAngle = Math.atan2(dy, dx);
     const speedBase = Math.sqrt(dx * dx + dy * dy) * velocityMultiplier;
 
@@ -86,6 +100,49 @@
       const angle = baseAngle + angleOffset;
 
       const speed = speedBase * (0.8 + Math.random() * 0.4);
+      const dxSpark = Math.cos(angle) * speed;
+      const dySpark = Math.sin(angle) * speed;
+
+      sparkle.style.left = `${e.clientX}px`;
+      sparkle.style.top = `${e.clientY}px`;
+      sparkle.style.transform = `translate(0, 0) scale(1) rotate(${Math.random() * 360}deg)`;
+      sparkle.style.opacity = '1';
+
+      document.body.appendChild(sparkle);
+
+      requestAnimationFrame(() => {
+        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(0.5) rotate(${Math.random() * 360}deg)`;
+        sparkle.style.opacity = '0';
+      });
+
+      setTimeout(() => {
+        sparkle.remove();
+      }, 900);
+    }
+  });
+
+  // Touch sparkle effect (mobile) — ONLY on taps (no dragging)
+  document.addEventListener('touchstart', (e) => {
+    if (sceneIndex > 2) return;
+
+    // Use the first touch point only
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const x = touch.clientX;
+    const y = touch.clientY;
+
+    const maxSparkles = 3;
+    const numSparkles = Math.max(0, maxSparkles - sceneIndex);
+
+    for (let i = 0; i < numSparkles; i++) {
+      const sparkle = document.createElement('img');
+      sparkle.src = sparkleSrc;
+      sparkle.className = 'sparkle';
+
+      const angle = (Math.random() - 0.5) * Math.PI * 2; // random angle around
+      const speed = 50 + Math.random() * 50; // fixed moderate speed for tap
+
       const dxSpark = Math.cos(angle) * speed;
       const dySpark = Math.sin(angle) * speed;
 
@@ -105,48 +162,6 @@
         sparkle.remove();
       }, 900);
     }
-  }
-
-  function handleMove(x, y) {
-    if (lastX === null || lastY === null) {
-      lastX = x;
-      lastY = y;
-      return;
-    }
-
-    const dx = x - lastX;
-    const dy = y - lastY;
-
-    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
-
-    lastX = x;
-    lastY = y;
-
-    spawnSparkles(x, y, dx, dy);
-  }
-
-  // Mouse support
-  document.addEventListener('mousemove', (e) => {
-    if (sceneIndex > 2) return;
-    handleMove(e.clientX, e.clientY);
   });
 
-  // Touch support with preventDefault to avoid scroll
-  document.addEventListener('touchstart', e => {
-    if (e.touches.length > 0) {
-      const touch = e.touches[0];
-      lastX = touch.clientX;
-      lastY = touch.clientY;
-
-      spawnSparkles(lastX, lastY, 0, 0);
-    }
-  });
-
-  document.addEventListener('touchmove', e => {
-    e.preventDefault(); // prevent scroll & enable dragging sparkles
-    if (e.touches.length > 0) {
-      const touch = e.touches[0];
-      handleMove(touch.clientX, touch.clientY);
-    }
-  }, { passive: false });
 })();
