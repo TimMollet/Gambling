@@ -4,95 +4,21 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Interactive Prototype</title>
-<style>
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    background: black;
-    overflow: hidden;
-  }
-  video {
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-  }
-  #nextBtn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: none;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-  }
-  #nextBtn img {
-    max-width: 150px;
-    height: auto;
-    user-select: none;
-    pointer-events: none;
-  }
-</style>
+<link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
 <video id="videoPlayer" autoplay muted playsinline></video>
 
-<button id="nextBtn" aria-label="Next">
-  <img id="btnImage" src="buttons/button1.png" alt="Next button" />
-</button>
+<div id="btnContainer">
+  <button id="nextBtn" aria-label="Next">
+    <img id="btnImage" src="buttons/button1.png" alt="Next button" />
+  </button>
+</div>
 
 <audio id="bgMusic" src="audio/bg-music.mp3" loop></audio>
 
-<script>
-(() => {
-  const videoPlayer = document.getElementById('videoPlayer');
-  const nextBtn = document.getElementById('nextBtn');
-  const btnImage = document.getElementById('btnImage');
-  const bgMusic = document.getElementById('bgMusic');
-
-  const totalScenes = 8;
-  let sceneIndex = 0;
-  let currentNarration = null;
-
-  const videos = Array.from({ length: totalScenes }, (_, i) => `videos/video${i + 1}.mp4`);
-  const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i + 1}.png`);
-  const narrations = Array.from({ length: totalScenes }, (_, i) => `audio/scene${i + 1}.mp3`);
-
-  // Load initial video and button
-  videoPlayer.src = videos[sceneIndex];
-  videoPlayer.loop = true;
-  btnImage.src = buttons[sceneIndex];
-
-  // Start bg music on first user interaction (due to autoplay policies)
-  function startBgMusic() {
-    bgMusic.play().catch(e => console.log("bgMusic error:", e));
-    document.removeEventListener('click', startBgMusic);
-  }
-  document.addEventListener('click', startBgMusic);
-
-  nextBtn.addEventListener('click', () => {
-    if (sceneIndex < totalScenes - 1) {
-      sceneIndex++;
-      videoPlayer.src = videos[sceneIndex];
-      videoPlayer.loop = (sceneIndex === totalScenes - 1); // loop only last scene video
-      videoPlayer.play();
-
-      btnImage.src = buttons[sceneIndex];
-
-      // Stop previous narration
-      if (currentNarration) {
-        currentNarration.pause();
-        currentNarration.currentTime = 0;
-      }
-
-      // Play narration for current scene
-      currentNarration = new Audio(narrations[sceneIndex]);
-      currentNarration.play().catch(e => console.log("Narration error:", e));
-    }
-  });
-})();
-</script>
+<script src="js/app.js" defer></script>
 
 </body>
 </html>
-

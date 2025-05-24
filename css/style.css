@@ -1,0 +1,39 @@
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: black;
+  overflow: hidden;
+}
+video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+}
+#nextBtn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#nextBtn.enabled {
+  transform: translate(-50%, -50%) scale(1);
+}
+#nextBtn img {
+  max-width: 150px;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+.sparkle {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  opacity: 1;
+  z-index: 9999;
+  transition: transform 0.9s ease-out, opacity 0.9s ease-out;
+}
