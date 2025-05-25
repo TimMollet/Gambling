@@ -8,57 +8,27 @@
   let sceneIndex = 0;
   let currentNarration = null;
 
-  const videos = Array.from({ length: totalScenes }, (_, i) => `videos/video${i}.mp4`);
-  const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i}.png`);
-  const narrations = Array.from({ length: totalScenes }, (_, i) => `audio/scene${i}.mp3`);
+  const videos = Array.from({ length: totalScenes }, (_, i) => `videos/video${i + 1}.mp4`);
+  const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i + 1}.png`);
+  const narrations = Array.from({ length: totalScenes }, (_, i) => `audio/scene${i + 1}.mp3`);
 
-  // Preload video elements cache
-  const videoCache = new Array(totalScenes).fill(null).map(() => document.createElement('video'));
+  // Initialize first scene
+  videoPlayer.src = videos[sceneIndex];
+  videoPlayer.loop = false;  // no looping per your request
+  btnImage.src = buttons[sceneIndex];
 
-  // Initialize button state and UI
   nextBtn.disabled = true;
   nextBtn.classList.remove('enabled');
 
-  // Load first button image but don't load first video yet
-  btnImage.src = buttons[sceneIndex];
-
-  // Flag to track if initial play has started
-  let started = false;
-
-  function preloadVideo(index) {
-    if (index < totalScenes && !videoCache[index].src) {
-      videoCache[index].src = videos[index];
-      videoCache[index].load();
-    }
-  }
-
-  function startPlayback() {
-    if (started) return;
-    started = true;
-
-    // Play first video from cache or fallback to src assignment
-    if (videoCache[0].src) {
-      videoPlayer.src = videoCache[0].src;
-    } else {
-      videoPlayer.src = videos[0];
-    }
-    videoPlayer.loop = false;
-    videoPlayer.play().catch(e => console.log("Video play error:", e));
-
-    playNarration(sceneIndex);
-
-    // Preload next video
-    preloadVideo(sceneIndex + 1);
-  }
-
-  // Background music play on first user interaction
+  // Start background music on first user interaction
   function startBgMusic() {
     bgMusic.play().catch(e => console.log("bgMusic error:", e));
     document.removeEventListener('click', startBgMusic);
+    playNarration(sceneIndex);
   }
   document.addEventListener('click', startBgMusic);
 
-  // Play narration and manage next button enabling
+  // Play narration and control button enabling
   function playNarration(index) {
     if (currentNarration) {
       currentNarration.pause();
@@ -79,30 +49,15 @@
   nextBtn.addEventListener('click', () => {
     if (sceneIndex < totalScenes - 1) {
       sceneIndex++;
-      // Switch video source to preloaded video if possible
-      if (videoCache[sceneIndex].src) {
-        videoPlayer.src = videoCache[sceneIndex].src;
-      } else {
-        videoPlayer.src = videos[sceneIndex];
-      }
+      videoPlayer.src = videos[sceneIndex];
       videoPlayer.loop = false;
-      videoPlayer.play().catch(e => console.log("Video play error:", e));
+      videoPlayer.play();
 
       btnImage.src = buttons[sceneIndex];
 
       playNarration(sceneIndex);
-
-      // Preload next video if exists
-      preloadVideo(sceneIndex + 1);
     }
   });
-
-  // Play first video & narration on any click or tap on the page (excluding button)
-  document.addEventListener('click', (e) => {
-    if (!started && e.target !== nextBtn) {
-      startPlayback();
-    }
-  }, { once: true });
 
   // Sparkles effect variables
   let lastX = null;
@@ -111,46 +66,9 @@
   const sparkleSrc = 'particles/sparkle.gif';
   const velocityMultiplier = 5;
 
-  // Helper to create sparkles with scaling based on sceneIndex
-  function createSparkles(x, y, baseAngle, speedBase, numSparkles) {
-    for (let i = 0; i < numSparkles; i++) {
-      const sparkle = document.createElement('img');
-      sparkle.src = sparkleSrc;
-      sparkle.className = 'sparkle';
-
-      const angleOffset = (Math.random() - 0.5) * (Math.PI / 4);
-      const angle = baseAngle + angleOffset;
-
-      const speed = speedBase * (0.8 + Math.random() * 0.4);
-      const dxSpark = Math.cos(angle) * speed;
-      const dySpark = Math.sin(angle) * speed;
-
-      // Scale linearly from 1 down to 0 as sceneIndex goes from 0 to max (3 here)
-      const maxSparkles = 3;
-      const scaleStart = Math.max(0, (maxSparkles - sceneIndex) / maxSparkles);
-      const scaleEnd = scaleStart * 0.33;
-
-      sparkle.style.left = `${x}px`;
-      sparkle.style.top = `${y}px`;
-      sparkle.style.transform = `translate(0, 0) scale(${scaleStart}) rotate(${Math.random() * 360}deg)`;
-      sparkle.style.opacity = '1';
-
-      document.body.appendChild(sparkle);
-
-      requestAnimationFrame(() => {
-        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${scaleEnd}) rotate(${Math.random() * 360}deg)`;
-        sparkle.style.opacity = '0';
-      });
-
-      setTimeout(() => {
-        sparkle.remove();
-      }, 900);
-    }
-  }
-
-  // Mouse sparkle effect (desktop)
+  // Desktop sparkle effect (mousemove)
   document.addEventListener('mousemove', (e) => {
-    if (sceneIndex > 2) return;
+    if (sceneIndex > 2) return; // no sparkles after scene 2
 
     if (lastX === null || lastY === null) {
       lastX = e.clientX;
@@ -172,10 +90,40 @@
     const maxSparkles = 3;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
 
-    createSparkles(e.clientX, e.clientY, baseAngle, speedBase, numSparkles);
+    // sparkle scale fades from 1 to 0 as sceneIndex goes 0->3
+    const sparkleScale = Math.max(0, 1 - sceneIndex / maxSparkles);
+
+    for (let i = 0; i < numSparkles; i++) {
+      const sparkle = document.createElement('img');
+      sparkle.src = sparkleSrc;
+      sparkle.className = 'sparkle';
+
+      const angleOffset = (Math.random() - 0.5) * (Math.PI / 4);
+      const angle = baseAngle + angleOffset;
+
+      const speed = speedBase * (0.8 + Math.random() * 0.4);
+      const dxSpark = Math.cos(angle) * speed;
+      const dySpark = Math.sin(angle) * speed;
+
+      sparkle.style.left = `${e.clientX}px`;
+      sparkle.style.top = `${e.clientY}px`;
+      sparkle.style.transform = `translate(0, 0) scale(${sparkleScale}) rotate(${Math.random() * 360}deg)`;
+      sparkle.style.opacity = '1';
+
+      document.body.appendChild(sparkle);
+
+      requestAnimationFrame(() => {
+        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${sparkleScale * 0.5}) rotate(${Math.random() * 360}deg)`;
+        sparkle.style.opacity = '0';
+      });
+
+      setTimeout(() => {
+        sparkle.remove();
+      }, 900);
+    }
   });
 
-  // Touch sparkle effect (mobile) — ONLY on taps (no dragging)
+  // Mobile sparkle effect (touchstart) - taps only
   document.addEventListener('touchstart', (e) => {
     if (sceneIndex > 2) return;
 
@@ -187,6 +135,7 @@
 
     const maxSparkles = 3;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
+    const sparkleScale = Math.max(0, 1 - sceneIndex / maxSparkles);
 
     for (let i = 0; i < numSparkles; i++) {
       const sparkle = document.createElement('img');
@@ -199,18 +148,15 @@
       const dxSpark = Math.cos(angle) * speed;
       const dySpark = Math.sin(angle) * speed;
 
-      const maxScale = Math.max(0, (maxSparkles - sceneIndex) / maxSparkles);
-      const endScale = maxScale * 0.5;
-
       sparkle.style.left = `${x}px`;
       sparkle.style.top = `${y}px`;
-      sparkle.style.transform = `translate(0, 0) scale(${maxScale}) rotate(${Math.random() * 360}deg)`;
+      sparkle.style.transform = `translate(0, 0) scale(${sparkleScale}) rotate(${Math.random() * 360}deg)`;
       sparkle.style.opacity = '1';
 
       document.body.appendChild(sparkle);
 
       requestAnimationFrame(() => {
-        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${endScale}) rotate(${Math.random() * 360}deg)`;
+        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(${sparkleScale * 0.5}) rotate(${Math.random() * 360}deg)`;
         sparkle.style.opacity = '0';
       });
 
@@ -219,5 +165,4 @@
       }, 900);
     }
   });
-
 })();
