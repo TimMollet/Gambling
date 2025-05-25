@@ -105,13 +105,13 @@
 
       sparkle.style.left = `${e.clientX}px`;
       sparkle.style.top = `${e.clientY}px`;
-      sparkle.style.transform = `translate(0, 0) scale(1) rotate(${Math.random() * 360}deg)`;
+      sparkle.style.transform = `translate(0, 0) scale(0.6) rotate(${Math.random() * 360}deg)`;
       sparkle.style.opacity = '1';
 
       document.body.appendChild(sparkle);
 
       requestAnimationFrame(() => {
-        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(0.5) rotate(${Math.random() * 360}deg)`;
+        sparkle.style.transform = `translate(${dxSpark}px, ${dySpark}px) scale(0.2) rotate(${Math.random() * 360}deg)`;
         sparkle.style.opacity = '0';
       });
 
