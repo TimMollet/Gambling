@@ -5,32 +5,34 @@
   const bgMusic = document.getElementById('bgMusic');
 
   const totalScenes = 8;
-  let sceneIndex = 0;
+  let sceneIndex = -1;
   let currentNarration = null;
+  let preloadedVideo = null;
 
   const videos = Array.from({ length: totalScenes }, (_, i) => `videos/video${i + 1}.mp4`);
   const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i + 1}.png`);
   const narrations = Array.from({ length: totalScenes }, (_, i) => `audio/scene${i + 1}.mp3`);
 
-  // Initialize
-  videoPlayer.src = videos[sceneIndex];
-  videoPlayer.loop = true;
-  btnImage.src = buttons[sceneIndex];
-
-  // Disable button and set scale to 0 initially
   nextBtn.disabled = true;
   nextBtn.classList.remove('enabled');
 
-  // Start background music on first user interaction
-  function startBgMusic() {
-    bgMusic.play().catch(e => console.log("bgMusic error:", e));
-    document.removeEventListener('click', startBgMusic);
-    playNarration(sceneIndex);
-  }
-  document.addEventListener('click', startBgMusic);
+  function startSceneOnInteraction() {
+    document.removeEventListener('click', startSceneOnInteraction);
 
-  // Play narration and control button enabling
-  function playNarration(index) {
+    bgMusic.play().catch(e => console.log("bgMusic error:", e));
+
+    sceneIndex = 0;
+    playScene(sceneIndex);
+  }
+  document.addEventListener('click', startSceneOnInteraction);
+
+  function playScene(index) {
+    videoPlayer.src = videos[index];
+    videoPlayer.loop = false; // do not loop
+    videoPlayer.play().catch(e => console.log("Video play error:", e));
+
+    btnImage.src = buttons[index];
+
     if (currentNarration) {
       currentNarration.pause();
       currentNarration.currentTime = 0;
@@ -45,22 +47,27 @@
       nextBtn.disabled = false;
       nextBtn.classList.add('enabled');
     };
+
+    preloadNextVideo(index + 1);
+  }
+
+  function preloadNextVideo(index) {
+    if (index >= totalScenes) return;
+
+    preloadedVideo = document.createElement('video');
+    preloadedVideo.src = videos[index];
+    preloadedVideo.preload = 'auto';
+    preloadedVideo.load();
   }
 
   nextBtn.addEventListener('click', () => {
     if (sceneIndex < totalScenes - 1) {
       sceneIndex++;
-      videoPlayer.src = videos[sceneIndex];
-      videoPlayer.loop = (sceneIndex === totalScenes - 1);
-      videoPlayer.play();
-
-      btnImage.src = buttons[sceneIndex];
-
-      playNarration(sceneIndex);
+      playScene(sceneIndex);
     }
   });
 
-  // Sparkles effect
+  // Sparkles
   let lastX = null;
   let lastY = null;
 
@@ -68,7 +75,6 @@
   const velocityMultiplier = 5;
   const maxSparkles = 3;
 
-  // Mouse sparkle effect (desktop)
   document.addEventListener('mousemove', (e) => {
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
     if (numSparkles === 0) return;
@@ -122,7 +128,6 @@
     }
   });
 
-  // Touch sparkle effect (mobile) — ONLY on taps (no dragging)
   document.addEventListener('touchstart', (e) => {
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
     if (numSparkles === 0) return;
@@ -163,5 +168,4 @@
       }, 900);
     }
   });
-
 })();
