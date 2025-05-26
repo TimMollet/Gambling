@@ -3,11 +3,22 @@ html, body {
   background: black;
   overflow: hidden;
 }
+
 video {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   object-fit: cover;
+  /* Optional default z-index, JS can toggle this */
+  z-index: 0;
 }
+
+#videoA {
+  z-index: 1; /* initially visible video */
+}
+
 #nextBtn {
   position: absolute;
   top: 50%;
@@ -19,15 +30,18 @@ video {
   cursor: pointer;
   transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
 #nextBtn.enabled {
   transform: translate(-50%, -50%) scale(1);
 }
+
 #nextBtn img {
   max-width: 150px;
   height: auto;
   user-select: none;
   pointer-events: none;
 }
+
 .sparkle {
   position: absolute;
   width: 32px;

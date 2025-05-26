@@ -1,5 +1,6 @@
 (() => {
-  const videoPlayer = document.getElementById('videoPlayer');
+  const videoA = document.getElementById('videoA');
+  const videoB = document.getElementById('videoB');
   const nextBtn = document.getElementById('nextBtn');
   const btnImage = document.getElementById('btnImage');
   const bgMusic = document.getElementById('bgMusic');
@@ -14,14 +15,19 @@
   const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i + 1}.png`);
   const narrations = Array.from({ length: totalScenes }, (_, i) => `audio/scene${i + 1}.mp3`);
 
-  // Start with video0 muted and looping
-  videoPlayer.src = videos[0];
-  videoPlayer.loop = true;
-  videoPlayer.muted = true;
-  videoPlayer.autoplay = true;
-  videoPlayer.play();
-  btnImage.src = buttons[0];
+  let currentVideo = videoA;
+  let nextVideo = videoB;
 
+  // Start with video0 muted and looping
+  currentVideo.src = videos[0];
+  currentVideo.loop = true;
+  currentVideo.muted = true;
+  currentVideo.autoplay = true;
+  currentVideo.style.opacity = '1';
+  nextVideo.style.opacity = '0';
+  currentVideo.play();
+
+  btnImage.src = buttons[0];
   nextBtn.disabled = true;
   nextBtn.classList.remove('enabled');
 
@@ -42,25 +48,43 @@
     };
   }
 
+  function crossfadeTo(index) {
+    const newSrc = videos[index];
+    const newButton = buttons[index];
+    const isFinal = index === totalScenes - 1;
+
+    nextVideo.src = newSrc;
+    nextVideo.loop = isFinal;
+    nextVideo.muted = false;
+    nextVideo.autoplay = true;
+    nextVideo.load();
+
+    nextVideo.oncanplay = () => {
+      nextVideo.play();
+      currentVideo.style.opacity = '0';
+      nextVideo.style.opacity = '1';
+
+      // Swap references
+      [currentVideo, nextVideo] = [nextVideo, currentVideo];
+
+      btnImage.src = newButton;
+      playNarration(index);
+    };
+  }
+
   // On first interaction: start bgm, narration, and jump to video1
   function handleFirstInteraction() {
     if (!firstInteraction) return;
     firstInteraction = false;
 
-    // Unmute and stop looping
-    videoPlayer.muted = false;
-    videoPlayer.loop = false;
+    currentVideo.muted = false;
+    currentVideo.loop = false;
 
-    // Jump to video1
     sceneIndex = 1;
-    videoPlayer.src = videos[sceneIndex];
-    videoPlayer.play();
+    crossfadeTo(sceneIndex);
 
-    btnImage.src = buttons[sceneIndex];
-    bgMusic.currentTime = 7; // jump to 7 seconds in
+    bgMusic.currentTime = 7;
     bgMusic.play().catch(e => console.log("bgMusic error:", e));
-    playNarration(sceneIndex);
-
     document.removeEventListener('click', handleFirstInteraction);
   }
   document.addEventListener('click', handleFirstInteraction);
@@ -68,20 +92,13 @@
   nextBtn.addEventListener('click', () => {
     if (sceneIndex < totalScenes - 1) {
       sceneIndex++;
-      videoPlayer.src = videos[sceneIndex];
-      videoPlayer.loop = (sceneIndex === totalScenes - 1);
-      videoPlayer.play();
-
-      btnImage.src = buttons[sceneIndex];
-
-      playNarration(sceneIndex);
+      crossfadeTo(sceneIndex);
     }
   });
 
   // Sparkles effect
   let lastX = null;
   let lastY = null;
-
   const sparkleSrc = 'particles/sparkle.gif';
   const velocityMultiplier = 5;
 
@@ -96,7 +113,6 @@
 
     const dx = e.clientX - lastX;
     const dy = e.clientY - lastY;
-
     lastX = e.clientX;
     lastY = e.clientY;
 
@@ -104,10 +120,8 @@
 
     const baseAngle = Math.atan2(dy, dx);
     const speedBase = Math.sqrt(dx * dx + dy * dy) * velocityMultiplier;
-
     const maxSparkles = 3;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
-
     const sparkleScale = Math.max(0, 1 - sceneIndex / maxSparkles);
 
     for (let i = 0; i < numSparkles; i++) {
@@ -134,9 +148,7 @@
         sparkle.style.opacity = '0';
       });
 
-      setTimeout(() => {
-        sparkle.remove();
-      }, 900);
+      setTimeout(() => sparkle.remove(), 900);
     }
   });
 })();
