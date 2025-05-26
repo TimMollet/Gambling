@@ -3,33 +3,28 @@
   const nextBtn = document.getElementById('nextBtn');
   const btnImage = document.getElementById('btnImage');
   const bgMusic = document.getElementById('bgMusic');
+  bgMusic.volume = 0.3;
 
-  const totalScenes = 8;
+  const totalScenes = 9;
   let sceneIndex = 0;
   let currentNarration = null;
+  let firstInteraction = true;
 
   const videos = Array.from({ length: totalScenes }, (_, i) => `videos/video${i + 1}.mp4`);
   const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i + 1}.png`);
   const narrations = Array.from({ length: totalScenes }, (_, i) => `audio/scene${i + 1}.mp3`);
 
-  // Initialize
-  videoPlayer.src = videos[sceneIndex];
+  // Start with video0 muted and looping
+  videoPlayer.src = videos[0];
   videoPlayer.loop = true;
-  btnImage.src = buttons[sceneIndex];
+  videoPlayer.muted = true;
+  videoPlayer.autoplay = true;
+  videoPlayer.play();
+  btnImage.src = buttons[0];
 
-  // Disable button and set scale to 0 initially
   nextBtn.disabled = true;
   nextBtn.classList.remove('enabled');
 
-  // Start background music on first user interaction
-  function startBgMusic() {
-    bgMusic.play().catch(e => console.log("bgMusic error:", e));
-    document.removeEventListener('click', startBgMusic);
-    playNarration(sceneIndex);
-  }
-  document.addEventListener('click', startBgMusic);
-
-  // Play narration and control button enabling
   function playNarration(index) {
     if (currentNarration) {
       currentNarration.pause();
@@ -46,6 +41,29 @@
       nextBtn.classList.add('enabled');
     };
   }
+
+  // On first interaction: start bgm, narration, and jump to video1
+  function handleFirstInteraction() {
+    if (!firstInteraction) return;
+    firstInteraction = false;
+
+    // Unmute and stop looping
+    videoPlayer.muted = false;
+    videoPlayer.loop = false;
+
+    // Jump to video1
+    sceneIndex = 1;
+    videoPlayer.src = videos[sceneIndex];
+    videoPlayer.play();
+
+    btnImage.src = buttons[sceneIndex];
+    bgMusic.currentTime = 7; // jump to 7 seconds in
+    bgMusic.play().catch(e => console.log("bgMusic error:", e));
+    playNarration(sceneIndex);
+
+    document.removeEventListener('click', handleFirstInteraction);
+  }
+  document.addEventListener('click', handleFirstInteraction);
 
   nextBtn.addEventListener('click', () => {
     if (sceneIndex < totalScenes - 1) {
@@ -68,7 +86,7 @@
   const velocityMultiplier = 5;
 
   document.addEventListener('mousemove', (e) => {
-    if (sceneIndex > 2) return; // no sparkles after scene 2
+    if (sceneIndex > 2) return;
 
     if (lastX === null || lastY === null) {
       lastX = e.clientX;
@@ -90,7 +108,6 @@
     const maxSparkles = 3;
     const numSparkles = Math.max(0, maxSparkles - sceneIndex);
 
-    // sparkle scale fades from 1 to 0 as sceneIndex goes 0->3 (though sparkles stop after scene 2)
     const sparkleScale = Math.max(0, 1 - sceneIndex / maxSparkles);
 
     for (let i = 0; i < numSparkles; i++) {
