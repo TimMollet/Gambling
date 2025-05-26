@@ -1,22 +1,29 @@
 html, body {
-  margin: 0; padding: 0; height: 100%;
+  margin: 0;
+  padding: 0;
+  height: 100%;
   background: black;
   overflow: hidden;
 }
 
 video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0; /* Sit behind all UI */
+}
+
+#btnContainer {
   position: absolute;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  object-fit: cover;
-  /* Optional default z-index, JS can toggle this */
-  z-index: 0;
-}
-
-#videoA {
-  z-index: 1; /* initially visible video */
+  z-index: 2;
+  pointer-events: none; /* Prevent accidental clicks outside the button */
 }
 
 #nextBtn {
@@ -29,6 +36,8 @@ video {
   padding: 0;
   cursor: pointer;
   transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: auto; /* Ensure button is clickable */
+  z-index: 3;
 }
 
 #nextBtn.enabled {
@@ -39,7 +48,7 @@ video {
   max-width: 150px;
   height: auto;
   user-select: none;
-  pointer-events: none;
+  pointer-events: none; /* Prevent the image from stealing pointer events */
 }
 
 .sparkle {
