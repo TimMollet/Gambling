@@ -10,6 +10,7 @@
   let sceneIndex = 0;
   let currentNarration = null;
   let firstInteraction = true;
+  const narrationPlayed = new Array(totalScenes).fill(false);
 
   const videos = Array.from({ length: totalScenes }, (_, i) => `videos/video${i + 1}.mp4`);
   const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i + 1}.png`);
@@ -18,7 +19,7 @@
   let currentVideo = videoA;
   let nextVideo = videoB;
 
-  // Start with video0 muted and looping
+  // Initial setup
   currentVideo.src = videos[0];
   currentVideo.loop = true;
   currentVideo.muted = true;
@@ -32,23 +33,37 @@
   nextBtn.classList.remove('enabled');
 
   function playNarration(index) {
+    if (narrationPlayed[index]) return;
+
     if (currentNarration) {
       currentNarration.pause();
       currentNarration.currentTime = 0;
     }
+
     currentNarration = new Audio(narrations[index]);
     currentNarration.play().catch(e => console.log("Narration error:", e));
+    narrationPlayed[index] = true;
 
     nextBtn.disabled = true;
     nextBtn.classList.remove('enabled');
 
     currentNarration.onended = () => {
-      nextBtn.disabled = false;
-      nextBtn.classList.add('enabled');
+      // If it's the last scene, you can either enable the button or disable it clearly
+      if (index < totalScenes - 1) {
+        nextBtn.disabled = false;
+        nextBtn.classList.add('enabled');
+      } else {
+        console.log("🎬 Final narration ended. Experience complete.");
+        nextBtn.disabled = true;
+        nextBtn.classList.remove('enabled');
+        // Optional: show "The End" or redirect
+      }
     };
   }
 
   function crossfadeTo(index) {
+    if (index >= totalScenes || narrationPlayed[index]) return;
+
     const newSrc = videos[index];
     const newButton = buttons[index];
     const isFinal = index === totalScenes - 1;
@@ -64,7 +79,6 @@
       currentVideo.style.opacity = '0';
       nextVideo.style.opacity = '1';
 
-      // Swap references
       [currentVideo, nextVideo] = [nextVideo, currentVideo];
 
       btnImage.src = newButton;
@@ -72,7 +86,6 @@
     };
   }
 
-  // On first interaction: start bgm, narration, and jump to video1
   function handleFirstInteraction() {
     if (!firstInteraction) return;
     firstInteraction = false;
@@ -87,16 +100,16 @@
     bgMusic.play().catch(e => console.log("bgMusic error:", e));
     document.removeEventListener('click', handleFirstInteraction);
   }
+
   document.addEventListener('click', handleFirstInteraction);
 
   nextBtn.addEventListener('click', () => {
-    if (sceneIndex < totalScenes - 1) {
-      sceneIndex++;
-      crossfadeTo(sceneIndex);
-    }
+    if (sceneIndex >= totalScenes - 1) return;
+    sceneIndex++;
+    crossfadeTo(sceneIndex);
   });
 
-  // Sparkles effect
+  // Sparkles
   let lastX = null;
   let lastY = null;
   const sparkleSrc = 'particles/sparkle.gif';
