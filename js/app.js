@@ -53,7 +53,7 @@
         nextBtn.disabled = false;
         nextBtn.classList.add('enabled');
       } else {
-        console.log("🎬 Final narration ended. Experience complete.");
+        console.log("Final narration ended. Experience complete.");
         nextBtn.disabled = true;
         nextBtn.classList.remove('enabled');
         // Optional: show "The End" or redirect
