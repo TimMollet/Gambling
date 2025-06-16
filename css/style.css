@@ -62,7 +62,7 @@ video {
 
 @media (max-aspect-ratio: 4/5) {
   #nextBtn {
-    top: 65%;
+    top: 55%;
   }
 }
 
