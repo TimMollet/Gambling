@@ -12,9 +12,24 @@
   let firstInteraction = true;
   const narrationPlayed = new Array(totalScenes).fill(false);
 
+  // Your videos array (normal scenes)
   const videos = Array.from({ length: totalScenes }, (_, i) => `videos/video${i + 1}.mp4`);
+  // Your extra video 3.5
+  const extraVideo = 'videos/video3.5.mp4';
+
+  // Buttons and narrations (unchanged)
   const buttons = Array.from({ length: totalScenes }, (_, i) => `buttons/button${i + 1}.png`);
   const narrations = Array.from({ length: totalScenes }, (_, i) => `audio/scene${i + 1}.mp3`);
+
+  // Preload all videos INCLUDING extra video3.5 to avoid black frames
+  const preloadVideos = [...videos, extraVideo].map(src => {
+    const v = document.createElement('video');
+    v.src = src;
+    v.preload = 'auto';
+    v.style.display = 'none';
+    document.body.appendChild(v);
+    return v;
+  });
 
   let currentVideo = videoA;
   let nextVideo = videoB;
@@ -32,6 +47,7 @@
   nextBtn.disabled = true;
   nextBtn.classList.remove('enabled');
 
+  // Play narration for scene
   function playNarration(index) {
     if (narrationPlayed[index]) return;
 
@@ -48,7 +64,6 @@
     nextBtn.classList.remove('enabled');
 
     currentNarration.onended = () => {
-      // If it's the last scene, you can either enable the button or disable it clearly
       if (index < totalScenes - 1) {
         nextBtn.disabled = false;
         nextBtn.classList.add('enabled');
@@ -56,14 +71,58 @@
         console.log("Final narration ended. Experience complete.");
         nextBtn.disabled = true;
         nextBtn.classList.remove('enabled');
-        // Optional: show "The End" or redirect
       }
     };
   }
 
+  // Custom crossfade with extra video3.5 automatic insertion after video3 on scene 2
   function crossfadeTo(index) {
-    if (index >= totalScenes || narrationPlayed[index]) return;
+    if (index >= totalScenes) return;
 
+    // Handle scene 2 special case: play video3, then auto-play video3.5 before moving on
+    if (index === 2) {
+      // First, crossfade to video3 normally
+      nextVideo.src = videos[2];
+      nextVideo.loop = false; // Don't loop video3
+      nextVideo.muted = false;
+      nextVideo.autoplay = true;
+      nextVideo.load();
+
+      nextVideo.oncanplay = () => {
+        nextVideo.play();
+        currentVideo.style.opacity = '0';
+        nextVideo.style.opacity = '1';
+
+        [currentVideo, nextVideo] = [nextVideo, currentVideo];
+        btnImage.src = buttons[2];
+        playNarration(2);
+
+        // When video3 ends, auto play video3.5 on the same element, looped
+        currentVideo.onended = () => {
+          currentVideo.onended = null; // remove handler to prevent loops
+          currentVideo.src = extraVideo;
+          currentVideo.loop = true;
+          currentVideo.muted = false;
+          currentVideo.autoplay = true;
+          currentVideo.load();
+
+          currentVideo.oncanplay = () => {
+            currentVideo.play();
+            btnImage.src = buttons[2]; // Keep same button as scene 2 during video3.5
+            // Narration is already playing or done, no changes here
+          };
+        };
+      };
+      sceneIndex = index; // Make sure sceneIndex stays at 2 here
+      return;
+    }
+
+    // For scenes after 2, if currently showing extra video3.5, switch back to normal video
+    if (index > 2 && currentVideo.src.includes('video3.5.mp4')) {
+      currentVideo.loop = false;
+    }
+
+    // Normal crossfade for all other scenes
     const newSrc = videos[index];
     const newButton = buttons[index];
     const isFinal = index === totalScenes - 1;
@@ -86,6 +145,7 @@
     };
   }
 
+  // On first interaction, start scene 1
   function handleFirstInteraction() {
     if (!firstInteraction) return;
     firstInteraction = false;
