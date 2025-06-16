@@ -27,7 +27,7 @@ video {
 }
 
 #nextBtn {
-  position: absolute;
+ position: absolute;
   top: 71%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0);
@@ -36,8 +36,11 @@ video {
   padding: 0;
   cursor: pointer;
   transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: auto; /* Ensure button is clickable */
+  pointer-events: auto;
   z-index: 3;
+  
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #nextBtn.enabled {
