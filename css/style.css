@@ -60,6 +60,12 @@ video {
   pointer-events: none; /* Prevent the image from stealing pointer events */
 }
 
+@media (max-aspect-ratio: 4/5) {
+  #nextBtn {
+    top: 65%;
+  }
+}
+
 .sparkle {
   position: absolute;
   width: 32px;
