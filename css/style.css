@@ -28,7 +28,7 @@ video {
 
 #nextBtn {
   position: absolute;
-  top: 50%;
+  top: 71%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0);
   border: none;
@@ -45,7 +45,7 @@ video {
 }
 
 #nextBtn img {
-  max-width: 150px;
+  max-width: 125px;
   height: auto;
   user-select: none;
   pointer-events: none; /* Prevent the image from stealing pointer events */
