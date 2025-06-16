@@ -60,9 +60,9 @@ video {
   pointer-events: none; /* Prevent the image from stealing pointer events */
 }
 
-@media (max-aspect-ratio: 4/5) {
+@media (max-aspect-ratio: 3/5) {
   #nextBtn {
-    top: 55%;
+    top: 60%;
   }
 }
 
